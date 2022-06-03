@@ -16,11 +16,9 @@ import (
 //constant variables to use with nats stream and
 // nats publishing
 const (
-	streamName       = "GITMETRICS"
-	streamSubjects   = "GITMETRICS.*"
-	githubSubject    = "GITMETRICS.github"
-	gitlabSubject    = "GITMETRICS.gitlab"
-	bitbucketSubject = "GITMETRICS.bitbucket"
+	streamName     = "GITMETRICS"
+	streamSubjects = "GITMETRICS.*"
+	eventSubject   = "GITMETRICS.git"
 )
 
 //to read the token from env variables
