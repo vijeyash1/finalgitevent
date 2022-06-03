@@ -27,7 +27,7 @@ func GetClickHouseConnection(url string) (*sql.DB, error) {
 
 func CreateGitSchema(connect *sql.DB) {
 	_, err := connect.Exec(`
-		CREATE TABLE IF NOT EXISTS gitevent (
+		CREATE TABLE IF NOT EXISTS vij (
 			id                UUID,
 			event        			String,
 			eventid        		String,
@@ -35,7 +35,7 @@ func CreateGitSchema(connect *sql.DB) {
 			url        				String,
 			authorname 				String,
 			authormail     		String,
-			doneAt						String,
+			doneat						String,
 			repository    		String,
 			addedfiles    		String,
 			modifiedfiles 		String,
@@ -50,7 +50,7 @@ func CreateGitSchema(connect *sql.DB) {
 func InsertGitEvent(connect *sql.DB, metrics models.Gitevent) {
 	var (
 		tx, _   = connect.Begin()
-		stmt, _ = tx.Prepare("INSERT INTO gitevent (id, event, eventid, branch, url, authorname, authormail, doneAt, repository, addedfiles, modifiedfiles, removedfiles, message) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+		stmt, _ = tx.Prepare("INSERT INTO vij (id, event, eventid, branch, url, authorname, authormail, doneat, repository, addedfiles, modifiedfiles, removedfiles, message) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,)")
 	)
 
 	defer stmt.Close()
@@ -58,7 +58,6 @@ func InsertGitEvent(connect *sql.DB, metrics models.Gitevent) {
 		metrics.Uuid,
 		metrics.Event,
 		metrics.Eventid,
-		metrics.Repository,
 		metrics.Branch,
 		metrics.Url,
 		metrics.Authorname,

@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/go-playground/webhooks/v6/bitbucket"
 	"github.com/go-playground/webhooks/v6/github"
@@ -20,18 +19,30 @@ func githubComposer(release github.PushPayload, event string) *models.Gitevent {
 	gitdatas.Eventid = release.Commits[0].ID
 	gitdatas.Authorname = release.Pusher.Name
 	gitdatas.Authormail = release.Pusher.Email
-	gitdatas.DoneAt = (time.Unix(release.Repository.PushedAt, 0).Format("02.01.2022 15:04:05"))
+	gitdatas.DoneAt = release.HeadCommit.Timestamp
 	gitdatas.Repository = release.Repository.Name
 	gitdatas.Branch = release.Repository.DefaultBranch
 	addedFilesSlice := release.Commits[0].Added
 	addedFilesString := getStats(&addedFilesSlice)
-	gitdatas.Addedfiles = addedFilesString
+	if addedFilesString == "" {
+		gitdatas.Addedfiles = "---"
+	} else {
+		gitdatas.Addedfiles = addedFilesString
+	}
 	modifiedFilesSlice := release.Commits[0].Modified
 	modifiedFilesString := getStats(&modifiedFilesSlice)
-	gitdatas.Modifiedfiles = modifiedFilesString
+	if modifiedFilesString == "" {
+		gitdatas.Modifiedfiles = "---"
+	} else {
+		gitdatas.Modifiedfiles = modifiedFilesString
+	}
 	removedFilesSlice := release.Commits[0].Removed
 	removedFilesString := getStats(&removedFilesSlice)
-	gitdatas.Modifiedfiles = removedFilesString
+	if removedFilesString == "" {
+		gitdatas.Removedfiles = "---"
+	} else {
+		gitdatas.Removedfiles = removedFilesString
+	}
 	gitdatas.Message = release.Commits[0].Message
 
 	return &gitdatas
@@ -50,13 +61,26 @@ func gitlabComposer(release gitlab.PushEventPayload, event string) *models.Gitev
 	gitdatas.Branch = release.Project.DefaultBranch
 	addedFilesSlice := release.Commits[0].Added
 	addedFilesString := getStats(&addedFilesSlice)
-	gitdatas.Addedfiles = addedFilesString
+	if addedFilesString == "" {
+		gitdatas.Addedfiles = "---"
+	} else {
+		gitdatas.Addedfiles = addedFilesString
+	}
+
 	modifiedFilesSlice := release.Commits[0].Modified
 	modifiedFilesString := getStats(&modifiedFilesSlice)
-	gitdatas.Modifiedfiles = modifiedFilesString
+	if modifiedFilesString == "" {
+		gitdatas.Modifiedfiles = "---"
+	} else {
+		gitdatas.Modifiedfiles = modifiedFilesString
+	}
 	removedFilesSlice := release.Commits[0].Removed
 	removedFilesString := getStats(&removedFilesSlice)
-	gitdatas.Modifiedfiles = removedFilesString
+	if removedFilesString == "" {
+		gitdatas.Removedfiles = "---"
+	} else {
+		gitdatas.Removedfiles = removedFilesString
+	}
 	gitdatas.Message = release.Commits[0].Message
 
 	return &gitdatas
