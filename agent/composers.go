@@ -8,11 +8,13 @@ import (
 	"github.com/go-playground/webhooks/v6/bitbucket"
 	"github.com/go-playground/webhooks/v6/github"
 	"github.com/go-playground/webhooks/v6/gitlab"
+	"github.com/google/uuid"
 	"github.com/vijeyash1/gitevent/models"
 )
 
 func githubComposer(release github.PushPayload, event string) *models.Gitevent {
-
+	uuid := uuid.New()
+	gitdatas.Uuid = uuid
 	gitdatas.Url = release.Repository.HTMLURL
 	gitdatas.Event = event
 	gitdatas.Eventid = release.Commits[0].ID
@@ -36,6 +38,8 @@ func githubComposer(release github.PushPayload, event string) *models.Gitevent {
 }
 
 func gitlabComposer(release gitlab.PushEventPayload, event string) *models.Gitevent {
+	uuid := uuid.New()
+	gitdatas.Uuid = uuid
 	gitdatas.Url = release.Project.WebURL
 	gitdatas.Event = event
 	gitdatas.Eventid = release.Commits[0].ID
@@ -59,6 +63,8 @@ func gitlabComposer(release gitlab.PushEventPayload, event string) *models.Gitev
 }
 
 func bitbucketComposer(release bitbucket.RepoPushPayload, event string) *models.Gitevent {
+	uuid := uuid.New()
+	gitdatas.Uuid = uuid
 	gitdatas.Event = event
 	gitdatas.Eventid = release.Push.Changes[0].New.Target.Hash
 	gitdatas.Authorname = release.Push.Changes[0].New.Target.Author.DisplayName

@@ -60,6 +60,7 @@ func main() {
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
+	log.Println("Starting server on port", cfg.port)
 	err := srv.ListenAndServe()
 	if err != nil {
 		log.Println(err)
