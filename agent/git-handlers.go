@@ -29,7 +29,7 @@ func (app *application) githubHandler(w http.ResponseWriter, r *http.Request) {
 	case github.PushPayload:
 		release := value
 		composed := githubComposer(release, "PushEvent")
-		app.publish.JS.GitPublish(composed)
+		app.publish.JS.GitPublish(composed, githubSubject)
 	}
 
 }
@@ -49,7 +49,7 @@ func (app *application) gitlabHandler(w http.ResponseWriter, r *http.Request) {
 	case gitlab.PushEventPayload:
 		release := value
 		composed := gitlabComposer(release, "PushEvent")
-		app.publish.JS.GitPublish(composed)
+		app.publish.JS.GitPublish(composed, gitlabSubject)
 	}
 }
 
@@ -68,8 +68,8 @@ func (app *application) bitBucketHandler(w http.ResponseWriter, r *http.Request)
 	case bitbucket.RepoPushPayload:
 		release := value
 		fmt.Printf("url url %s\n", release.Repository.Website)
-
-		app.publish.JS.GitPublish()
+		composed := bitbucketComposer(release, "PushEvent")
+		app.publish.JS.GitPublish(composed, bitbucketSubject)
 
 	}
 }

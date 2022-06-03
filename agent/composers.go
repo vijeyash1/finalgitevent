@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-playground/webhooks/v6/bitbucket"
 	"github.com/go-playground/webhooks/v6/github"
 	"github.com/go-playground/webhooks/v6/gitlab"
 	"github.com/vijeyash1/gitevent/models"
@@ -53,6 +54,18 @@ func gitlabComposer(release gitlab.PushEventPayload, event string) *models.Gitev
 	removedFilesString := getStats(&removedFilesSlice)
 	gitdatas.Modifiedfiles = removedFilesString
 	gitdatas.Message = release.Commits[0].Message
+
+	return &gitdatas
+}
+
+func bitbucketComposer(release bitbucket.RepoPushPayload, event string) *models.Gitevent {
+	gitdatas.Event = event
+	gitdatas.Eventid = release.Push.Changes[0].New.Target.Hash
+	gitdatas.Authorname = release.Push.Changes[0].New.Target.Author.DisplayName
+	gitdatas.DoneAt = fmt.Sprintf("%v", release.Push.Changes[0].New.Target.Date)
+	gitdatas.Repository = release.Repository.Name
+	gitdatas.Branch = release.Push.Changes[0].New.Name
+	gitdatas.Message = release.Push.Changes[0].New.Target.Message
 
 	return &gitdatas
 }
