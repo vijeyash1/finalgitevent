@@ -10,6 +10,7 @@ type Models struct {
 	JS jsModel
 }
 
+//NewModels returns a nats js pool
 func NewModels(js nats.JetStreamContext) Models {
 	return Models{
 		JS: jsModel{
