@@ -9,7 +9,10 @@ import (
 	"github.com/go-playground/webhooks/v6/bitbucket"
 	"github.com/go-playground/webhooks/v6/github"
 	"github.com/go-playground/webhooks/v6/gitlab"
+	"github.com/vijeyash1/gitevent/models"
 )
+
+var gitdatas models.Gitevent
 
 func (app *application) githubHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -19,17 +22,14 @@ func (app *application) githubHandler(w http.ResponseWriter, r *http.Request) {
 		if err == github.ErrEventNotFound {
 			log.Print("Error Event not found")
 		}
+
 	}
 
 	switch value := payload.(type) {
-
 	case github.PushPayload:
 		release := value
-		// Do whatever you want from here...
-		fmt.Printf("%s\n", release.Repository.Name)
-
-		app.publish.JS.GitPublish()
-
+		composed := githubComposer(release, "PushEvent")
+		app.publish.JS.GitPublish(composed)
 	}
 
 }
@@ -48,10 +48,8 @@ func (app *application) gitlabHandler(w http.ResponseWriter, r *http.Request) {
 
 	case gitlab.PushEventPayload:
 		release := value
-		fmt.Printf("%s\n", release.Repository.Name)
-
-		app.publish.JS.GitPublish()
-
+		composed := gitlabComposer(release, "PushEvent")
+		app.publish.JS.GitPublish(composed)
 	}
 }
 

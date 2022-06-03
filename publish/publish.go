@@ -1,6 +1,9 @@
 package publish
 
-import "github.com/nats-io/nats.go"
+import (
+	"github.com/nats-io/nats.go"
+	"github.com/vijeyash1/gitevent/models"
+)
 
 type jsModel struct {
 	js nats.JetStreamContext
@@ -19,6 +22,6 @@ func NewModels(js nats.JetStreamContext) Models {
 	}
 }
 
-func (m *jsModel) GitPublish() {
+func (m *jsModel) GitPublish(d *models.Gitevent) {
 
 }
