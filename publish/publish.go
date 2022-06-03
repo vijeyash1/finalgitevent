@@ -18,3 +18,7 @@ func NewModels(js nats.JetStreamContext) Models {
 		},
 	}
 }
+
+func (m *jsModel) GitPublish() {
+
+}
