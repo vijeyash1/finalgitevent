@@ -26,12 +26,12 @@ func NewModels(js nats.JetStreamContext) Models {
 	}
 }
 
-func (m *jsModel) GitPublish(d *models.Gitevent, eventSubject string) {
+func (m *jsModel) GitPublish(d *models.Gitevent) {
 	metricsJson, _ := json.Marshal(d)
-	_, err := m.js.Publish(eventSubject, metricsJson)
+	_, err := m.js.Publish("GITMETRICS.git", metricsJson)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println(string(metricsJson))
-	log.Printf("Metrics with eventSubject:%s has been published\n", eventSubject)
+	log.Printf("Metrics with eventSubject:%s has been published\n", "GITMETRICS.git")
 }
