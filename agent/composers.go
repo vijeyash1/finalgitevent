@@ -113,7 +113,6 @@ func gitComposer(release interface{}, event string) *models.Gitevent {
 		} else {
 			gitdatas.Addedfiles = addedFilesString
 		}
-
 		modifiedFilesSlice := v.Commits[0].Modified
 		modifiedFilesString := getStats(&modifiedFilesSlice)
 		if modifiedFilesString == "" {
@@ -146,7 +145,6 @@ func gitComposer(release interface{}, event string) *models.Gitevent {
 		} else {
 			gitdatas.Addedfiles = addedFilesString
 		}
-
 		modifiedFilesSlice := ""
 		modifiedFilesString := modifiedFilesSlice
 		if modifiedFilesString == "" {
@@ -165,12 +163,35 @@ func gitComposer(release interface{}, event string) *models.Gitevent {
 
 	case bitbucket.RepoPushPayload:
 		gitdatas.Uuid = uuid
+		gitdatas.Url = v.Push.Changes[0].New.Links.HTML.Href
 		gitdatas.Event = event
 		gitdatas.Eventid = v.Push.Changes[0].New.Target.Hash
 		gitdatas.Authorname = v.Push.Changes[0].New.Target.Author.DisplayName
+		gitdatas.Authormail = "---"
 		gitdatas.DoneAt = fmt.Sprintf("%v", v.Push.Changes[0].New.Target.Date)
 		gitdatas.Repository = v.Repository.Name
 		gitdatas.Branch = v.Push.Changes[0].New.Name
+		addedFilesSlice := ""
+		addedFilesString := addedFilesSlice
+		if addedFilesString == "" {
+			gitdatas.Addedfiles = "---"
+		} else {
+			gitdatas.Addedfiles = addedFilesString
+		}
+		modifiedFilesSlice := ""
+		modifiedFilesString := modifiedFilesSlice
+		if modifiedFilesString == "" {
+			gitdatas.Modifiedfiles = "---"
+		} else {
+			gitdatas.Modifiedfiles = modifiedFilesString
+		}
+		removedFilesSlice := ""
+		removedFilesString := removedFilesSlice
+		if removedFilesString == "" {
+			gitdatas.Removedfiles = "---"
+		} else {
+			gitdatas.Removedfiles = removedFilesString
+		}
 		gitdatas.Message = v.Push.Changes[0].New.Target.Message
 
 	}

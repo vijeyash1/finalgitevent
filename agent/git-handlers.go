@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"net/http"
@@ -17,7 +16,7 @@ func (app *application) githubHandler(w http.ResponseWriter, r *http.Request) {
 	payload, err := hook.Parse(r, github.PushEvent, github.ForkEvent, github.PullRequestEvent)
 	if err != nil {
 		if err == github.ErrEventNotFound {
-			log.Print("Error Event not found")
+			log.Print("Error This Event is not Supported")
 		}
 
 	}
@@ -46,7 +45,7 @@ func (app *application) gitlabHandler(w http.ResponseWriter, r *http.Request) {
 	payload, err := hook.Parse(r, gitlab.PushEvents, gitlab.MergeRequestEvents)
 	if err != nil {
 		if err == gitlab.ErrEventNotFound {
-			log.Print("Error Event not found")
+			log.Print("Error This Event is not Supported")
 		}
 	}
 
@@ -69,7 +68,7 @@ func (app *application) bitBucketHandler(w http.ResponseWriter, r *http.Request)
 	payload, err := hook.Parse(r, bitbucket.RepoPushEvent)
 	if err != nil {
 		if err == github.ErrEventNotFound {
-			log.Print("Error Event not found")
+			log.Print("Error This Event is not Supported")
 		}
 	}
 
@@ -77,7 +76,6 @@ func (app *application) bitBucketHandler(w http.ResponseWriter, r *http.Request)
 
 	case bitbucket.RepoPushPayload:
 		release := value
-		fmt.Printf("url url %s\n", release.Repository.Website)
 		composed := gitComposer(release, "PushEvent")
 		app.publish.JS.GitPublish(composed)
 

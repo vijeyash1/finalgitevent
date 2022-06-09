@@ -6,3 +6,5 @@ forkrequest
 gitlab webhooks supported:
 pushrequest
 mergerequest
+github webhooks supported:
+pushrequest
