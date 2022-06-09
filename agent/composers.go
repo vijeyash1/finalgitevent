@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-playground/webhooks/v6/bitbucket"
 	"github.com/go-playground/webhooks/v6/github"
@@ -193,6 +194,72 @@ func gitComposer(release interface{}, event string) *models.Gitevent {
 			gitdatas.Removedfiles = removedFilesString
 		}
 		gitdatas.Message = v.Push.Changes[0].New.Target.Message
+	case bitbucket.RepoForkPayload:
+		rs := time.Now().UTC()
+		gitdatas.Uuid = uuid
+		gitdatas.Url = v.Fork.Links.HTML.Href
+		gitdatas.Event = event
+		gitdatas.Eventid = v.Repository.UUID
+		gitdatas.Authorname = v.Fork.Owner.DisplayName
+		gitdatas.Authormail = "---"
+		gitdatas.DoneAt = fmt.Sprintf("%v", rs)
+		gitdatas.Repository = v.Repository.Name
+		gitdatas.Branch = "---"
+		addedFilesSlice := ""
+		addedFilesString := addedFilesSlice
+		if addedFilesString == "" {
+			gitdatas.Addedfiles = "---"
+		} else {
+			gitdatas.Addedfiles = addedFilesString
+		}
+		modifiedFilesSlice := ""
+		modifiedFilesString := modifiedFilesSlice
+		if modifiedFilesString == "" {
+			gitdatas.Modifiedfiles = "---"
+		} else {
+			gitdatas.Modifiedfiles = modifiedFilesString
+		}
+		removedFilesSlice := ""
+		removedFilesString := removedFilesSlice
+		if removedFilesString == "" {
+			gitdatas.Removedfiles = "---"
+		} else {
+			gitdatas.Removedfiles = removedFilesString
+		}
+		gitdatas.Message = "---"
+
+	case bitbucket.PullRequestCreatedPayload:
+		gitdatas.Uuid = uuid
+		gitdatas.Url = v.Repository.Links.HTML.Href
+		gitdatas.Event = event
+		gitdatas.Eventid = v.Repository.UUID
+		gitdatas.Authorname = v.PullRequest.Author.DisplayName
+		gitdatas.Authormail = "---"
+		gitdatas.DoneAt = fmt.Sprintf("%v", v.PullRequest.CreatedOn)
+		gitdatas.Repository = v.Repository.Name
+		gitdatas.Branch = "---"
+		addedFilesSlice := ""
+		addedFilesString := addedFilesSlice
+		if addedFilesString == "" {
+			gitdatas.Addedfiles = "---"
+		} else {
+			gitdatas.Addedfiles = addedFilesString
+		}
+		modifiedFilesSlice := ""
+		modifiedFilesString := modifiedFilesSlice
+		if modifiedFilesString == "" {
+			gitdatas.Modifiedfiles = "---"
+		} else {
+			gitdatas.Modifiedfiles = modifiedFilesString
+		}
+		removedFilesSlice := ""
+		removedFilesString := removedFilesSlice
+		if removedFilesString == "" {
+			gitdatas.Removedfiles = "---"
+		} else {
+			gitdatas.Removedfiles = removedFilesString
+		}
+		gitdatas.Message = v.PullRequest.Description
 
 	}
 	return &gitdatas

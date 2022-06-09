@@ -65,7 +65,7 @@ func (app *application) gitlabHandler(w http.ResponseWriter, r *http.Request) {
 func (app *application) bitBucketHandler(w http.ResponseWriter, r *http.Request) {
 
 	hook, _ := bitbucket.New()
-	payload, err := hook.Parse(r, bitbucket.RepoPushEvent)
+	payload, err := hook.Parse(r, bitbucket.RepoPushEvent, bitbucket.RepoForkEvent, bitbucket.PullRequestCreatedEvent)
 	if err != nil {
 		if err == github.ErrEventNotFound {
 			log.Print("Error This Event is not Supported")
@@ -77,6 +77,14 @@ func (app *application) bitBucketHandler(w http.ResponseWriter, r *http.Request)
 	case bitbucket.RepoPushPayload:
 		release := value
 		composed := gitComposer(release, "PushEvent")
+		app.publish.JS.GitPublish(composed)
+	case bitbucket.RepoForkPayload:
+		release := value
+		composed := gitComposer(release, "ForkEvent")
+		app.publish.JS.GitPublish(composed)
+	case bitbucket.PullRequestCreatedPayload:
+		release := value
+		composed := gitComposer(release, "PullRequest")
 		app.publish.JS.GitPublish(composed)
 
 	}

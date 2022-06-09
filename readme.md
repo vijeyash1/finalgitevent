@@ -8,3 +8,5 @@ pushrequest
 mergerequest
 github webhooks supported:
 pushrequest
+forkrequest
+pullrequest
