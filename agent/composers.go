@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/go-playground/webhooks/v6/bitbucket"
@@ -11,92 +12,168 @@ import (
 	"github.com/vijeyash1/gitevent/models"
 )
 
-func githubComposer(release github.PushPayload, event string) *models.Gitevent {
+var gitdatas models.Gitevent
+
+func gitComposer(release interface{}, event string) *models.Gitevent {
 	uuid := uuid.New()
-	gitdatas.Uuid = uuid
-	gitdatas.Url = release.Repository.HTMLURL
-	gitdatas.Event = event
-	gitdatas.Eventid = release.Commits[0].ID
-	gitdatas.Authorname = release.Pusher.Name
-	gitdatas.Authormail = release.Pusher.Email
-	gitdatas.DoneAt = release.HeadCommit.Timestamp
-	gitdatas.Repository = release.Repository.Name
-	gitdatas.Branch = release.Repository.DefaultBranch
-	addedFilesSlice := release.Commits[0].Added
-	addedFilesString := getStats(&addedFilesSlice)
-	if addedFilesString == "" {
+	switch v := release.(type) {
+
+	case github.PushPayload:
+		gitdatas.Uuid = uuid
+		gitdatas.Url = v.Repository.HTMLURL
+		gitdatas.Event = event
+		gitdatas.Eventid = v.Commits[0].ID
+		gitdatas.Authorname = v.Pusher.Name
+		gitdatas.Authormail = v.Pusher.Email
+		gitdatas.DoneAt = v.HeadCommit.Timestamp
+		gitdatas.Repository = v.Repository.Name
+		gitdatas.Branch = v.Repository.DefaultBranch
+		addedFilesSlice := v.Commits[0].Added
+		addedFilesString := getStats(&addedFilesSlice)
+		if addedFilesString == "" {
+			gitdatas.Addedfiles = "---"
+		} else {
+			gitdatas.Addedfiles = addedFilesString
+		}
+		modifiedFilesSlice := v.Commits[0].Modified
+		modifiedFilesString := getStats(&modifiedFilesSlice)
+		if modifiedFilesString == "" {
+			gitdatas.Modifiedfiles = "---"
+		} else {
+			gitdatas.Modifiedfiles = modifiedFilesString
+		}
+		removedFilesSlice := v.Commits[0].Removed
+		removedFilesString := getStats(&removedFilesSlice)
+		if removedFilesString == "" {
+			gitdatas.Removedfiles = "---"
+		} else {
+			gitdatas.Removedfiles = removedFilesString
+		}
+		gitdatas.Message = v.Commits[0].Message
+	case github.ForkPayload:
+		gitdatas.Uuid = uuid
+		gitdatas.Url = v.Repository.HTMLURL
+		gitdatas.Event = event
+		gitdatas.Eventid = strconv.Itoa(int(v.Forkee.ID))
+		gitdatas.Authorname = v.Forkee.FullName
+		gitdatas.Authormail = "---"
+		gitdatas.DoneAt = fmt.Sprintf("%v", v.Forkee.CreatedAt)
+		gitdatas.Branch = v.Repository.DefaultBranch
 		gitdatas.Addedfiles = "---"
-	} else {
-		gitdatas.Addedfiles = addedFilesString
-	}
-	modifiedFilesSlice := release.Commits[0].Modified
-	modifiedFilesString := getStats(&modifiedFilesSlice)
-	if modifiedFilesString == "" {
 		gitdatas.Modifiedfiles = "---"
-	} else {
-		gitdatas.Modifiedfiles = modifiedFilesString
-	}
-	removedFilesSlice := release.Commits[0].Removed
-	removedFilesString := getStats(&removedFilesSlice)
-	if removedFilesString == "" {
 		gitdatas.Removedfiles = "---"
-	} else {
-		gitdatas.Removedfiles = removedFilesString
+		gitdatas.Message = "---"
+	case github.PullRequestPayload:
+		gitdatas.Uuid = uuid
+		gitdatas.Url = v.Repository.HTMLURL
+		gitdatas.Event = event
+		gitdatas.Eventid = strconv.Itoa(int(v.PullRequest.ID))
+		gitdatas.Authorname = v.PullRequest.User.Login
+		gitdatas.Authormail = "---"
+		gitdatas.DoneAt = fmt.Sprintf("%v", v.PullRequest.CreatedAt)
+		gitdatas.Repository = v.Repository.Name
+		gitdatas.Branch = v.Repository.DefaultBranch
+		addedFilesSlice := strconv.Itoa(int(v.PullRequest.Additions))
+		addedFilesString := addedFilesSlice
+		if addedFilesString == "" {
+			gitdatas.Addedfiles = "---"
+		} else {
+			gitdatas.Addedfiles = addedFilesString
+		}
+		modifiedFilesSlice := strconv.Itoa(int(v.PullRequest.ChangedFiles))
+		modifiedFilesString := modifiedFilesSlice
+		if modifiedFilesString == "" {
+			gitdatas.Modifiedfiles = "---"
+		} else {
+			gitdatas.Modifiedfiles = modifiedFilesString
+		}
+		removedFilesSlice := strconv.Itoa(int(v.PullRequest.Deletions))
+		removedFilesString := removedFilesSlice
+		if removedFilesString == "" {
+			gitdatas.Removedfiles = "---"
+		} else {
+			gitdatas.Removedfiles = removedFilesString
+		}
+		gitdatas.Message = v.PullRequest.Title
+
+	case gitlab.PushEventPayload:
+		gitdatas.Uuid = uuid
+		gitdatas.Url = v.Project.WebURL
+		gitdatas.Event = event
+		gitdatas.Eventid = v.Commits[0].ID
+		gitdatas.Authorname = v.Commits[0].Author.Name
+		gitdatas.Authormail = v.Commits[0].Author.Email
+		gitdatas.DoneAt = fmt.Sprintf("%v", v.Commits[0].Timestamp)
+		gitdatas.Repository = v.Repository.Name
+		gitdatas.Branch = v.Project.DefaultBranch
+		addedFilesSlice := v.Commits[0].Added
+		addedFilesString := getStats(&addedFilesSlice)
+		if addedFilesString == "" {
+			gitdatas.Addedfiles = "---"
+		} else {
+			gitdatas.Addedfiles = addedFilesString
+		}
+
+		modifiedFilesSlice := v.Commits[0].Modified
+		modifiedFilesString := getStats(&modifiedFilesSlice)
+		if modifiedFilesString == "" {
+			gitdatas.Modifiedfiles = "---"
+		} else {
+			gitdatas.Modifiedfiles = modifiedFilesString
+		}
+		removedFilesSlice := v.Commits[0].Removed
+		removedFilesString := getStats(&removedFilesSlice)
+		if removedFilesString == "" {
+			gitdatas.Removedfiles = "---"
+		} else {
+			gitdatas.Removedfiles = removedFilesString
+		}
+		gitdatas.Message = v.Commits[0].Message
+	case gitlab.MergeRequestEventPayload:
+		gitdatas.Uuid = uuid
+		gitdatas.Url = v.Project.URL
+		gitdatas.Event = event
+		gitdatas.Eventid = strconv.Itoa(int(v.ObjectAttributes.ID))
+		gitdatas.Authorname = v.ObjectAttributes.LastCommit.Author.Name
+		gitdatas.Authormail = v.ObjectAttributes.LastCommit.Author.Email
+		gitdatas.DoneAt = fmt.Sprintf("%v", v.ObjectAttributes.CreatedAt)
+		gitdatas.Repository = v.Repository.Name
+		gitdatas.Branch = v.Project.DefaultBranch
+		addedFilesSlice := ""
+		addedFilesString := addedFilesSlice
+		if addedFilesString == "" {
+			gitdatas.Addedfiles = "---"
+		} else {
+			gitdatas.Addedfiles = addedFilesString
+		}
+
+		modifiedFilesSlice := ""
+		modifiedFilesString := modifiedFilesSlice
+		if modifiedFilesString == "" {
+			gitdatas.Modifiedfiles = "---"
+		} else {
+			gitdatas.Modifiedfiles = modifiedFilesString
+		}
+		removedFilesSlice := ""
+		removedFilesString := removedFilesSlice
+		if removedFilesString == "" {
+			gitdatas.Removedfiles = "---"
+		} else {
+			gitdatas.Removedfiles = removedFilesString
+		}
+		gitdatas.Message = v.ObjectAttributes.LastCommit.Message
+
+	case bitbucket.RepoPushPayload:
+		gitdatas.Uuid = uuid
+		gitdatas.Event = event
+		gitdatas.Eventid = v.Push.Changes[0].New.Target.Hash
+		gitdatas.Authorname = v.Push.Changes[0].New.Target.Author.DisplayName
+		gitdatas.DoneAt = fmt.Sprintf("%v", v.Push.Changes[0].New.Target.Date)
+		gitdatas.Repository = v.Repository.Name
+		gitdatas.Branch = v.Push.Changes[0].New.Name
+		gitdatas.Message = v.Push.Changes[0].New.Target.Message
+
 	}
-	gitdatas.Message = release.Commits[0].Message
-
-	return &gitdatas
-}
-
-func gitlabComposer(release gitlab.PushEventPayload, event string) *models.Gitevent {
-	uuid := uuid.New()
-	gitdatas.Uuid = uuid
-	gitdatas.Url = release.Project.WebURL
-	gitdatas.Event = event
-	gitdatas.Eventid = release.Commits[0].ID
-	gitdatas.Authorname = release.Commits[0].Author.Name
-	gitdatas.Authormail = release.Commits[0].Author.Email
-	gitdatas.DoneAt = fmt.Sprintf("%v", release.Commits[0].Timestamp)
-	gitdatas.Repository = release.Repository.Name
-	gitdatas.Branch = release.Project.DefaultBranch
-	addedFilesSlice := release.Commits[0].Added
-	addedFilesString := getStats(&addedFilesSlice)
-	if addedFilesString == "" {
-		gitdatas.Addedfiles = "---"
-	} else {
-		gitdatas.Addedfiles = addedFilesString
-	}
-
-	modifiedFilesSlice := release.Commits[0].Modified
-	modifiedFilesString := getStats(&modifiedFilesSlice)
-	if modifiedFilesString == "" {
-		gitdatas.Modifiedfiles = "---"
-	} else {
-		gitdatas.Modifiedfiles = modifiedFilesString
-	}
-	removedFilesSlice := release.Commits[0].Removed
-	removedFilesString := getStats(&removedFilesSlice)
-	if removedFilesString == "" {
-		gitdatas.Removedfiles = "---"
-	} else {
-		gitdatas.Removedfiles = removedFilesString
-	}
-	gitdatas.Message = release.Commits[0].Message
-
-	return &gitdatas
-}
-
-func bitbucketComposer(release bitbucket.RepoPushPayload, event string) *models.Gitevent {
-	uuid := uuid.New()
-	gitdatas.Uuid = uuid
-	gitdatas.Event = event
-	gitdatas.Eventid = release.Push.Changes[0].New.Target.Hash
-	gitdatas.Authorname = release.Push.Changes[0].New.Target.Author.DisplayName
-	gitdatas.DoneAt = fmt.Sprintf("%v", release.Push.Changes[0].New.Target.Date)
-	gitdatas.Repository = release.Repository.Name
-	gitdatas.Branch = release.Push.Changes[0].New.Name
-	gitdatas.Message = release.Push.Changes[0].New.Target.Message
-
 	return &gitdatas
 }
 

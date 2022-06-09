@@ -9,15 +9,12 @@ import (
 	"github.com/go-playground/webhooks/v6/bitbucket"
 	"github.com/go-playground/webhooks/v6/github"
 	"github.com/go-playground/webhooks/v6/gitlab"
-	"github.com/vijeyash1/gitevent/models"
 )
-
-var gitdatas models.Gitevent
 
 func (app *application) githubHandler(w http.ResponseWriter, r *http.Request) {
 
 	hook, _ := github.New()
-	payload, err := hook.Parse(r, github.PushEvent)
+	payload, err := hook.Parse(r, github.PushEvent, github.ForkEvent, github.PullRequestEvent)
 	if err != nil {
 		if err == github.ErrEventNotFound {
 			log.Print("Error Event not found")
@@ -28,8 +25,17 @@ func (app *application) githubHandler(w http.ResponseWriter, r *http.Request) {
 	switch value := payload.(type) {
 	case github.PushPayload:
 		release := value
-		composed := githubComposer(release, "PushEvent")
+		composed := gitComposer(release, "PushEvent")
 		app.publish.JS.GitPublish(composed)
+	case github.ForkPayload:
+		release := value
+		composed := gitComposer(release, "ForkEvent")
+		app.publish.JS.GitPublish(composed)
+	case github.PullRequestPayload:
+		release := value
+		composed := gitComposer(release, "PullRequest")
+		app.publish.JS.GitPublish(composed)
+
 	}
 
 }
@@ -37,7 +43,7 @@ func (app *application) githubHandler(w http.ResponseWriter, r *http.Request) {
 func (app *application) gitlabHandler(w http.ResponseWriter, r *http.Request) {
 
 	hook, _ := gitlab.New()
-	payload, err := hook.Parse(r, gitlab.PushEvents)
+	payload, err := hook.Parse(r, gitlab.PushEvents, gitlab.MergeRequestEvents)
 	if err != nil {
 		if err == gitlab.ErrEventNotFound {
 			log.Print("Error Event not found")
@@ -48,7 +54,11 @@ func (app *application) gitlabHandler(w http.ResponseWriter, r *http.Request) {
 
 	case gitlab.PushEventPayload:
 		release := value
-		composed := gitlabComposer(release, "PushEvent")
+		composed := gitComposer(release, "PushEvent")
+		app.publish.JS.GitPublish(composed)
+	case gitlab.MergeRequest:
+		release := value
+		composed := gitComposer(release, "MergeRequest")
 		app.publish.JS.GitPublish(composed)
 	}
 }
@@ -68,7 +78,7 @@ func (app *application) bitBucketHandler(w http.ResponseWriter, r *http.Request)
 	case bitbucket.RepoPushPayload:
 		release := value
 		fmt.Printf("url url %s\n", release.Repository.Website)
-		composed := bitbucketComposer(release, "PushEvent")
+		composed := gitComposer(release, "PushEvent")
 		app.publish.JS.GitPublish(composed)
 
 	}
