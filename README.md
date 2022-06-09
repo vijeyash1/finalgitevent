@@ -2,17 +2,17 @@
 
 ## github webhooks supported:
 
--pushrequest
--pullrequest
--forkrequest
+- pushrequest
+- pullrequest
+- forkrequest
 
 ## gitlab webhooks supported:
 
--pushrequest
--mergerequest
+- pushrequest
+- mergerequest
 
 ## bitbucket webhooks supported:
 
--pushrequest
--forkrequest
--pullrequest
+- pushrequest
+- forkrequest
+- pullrequest
