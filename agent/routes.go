@@ -9,9 +9,9 @@ import (
 func (app *application) routes() *httprouter.Router {
 	router := httprouter.New()
 
-	router.HandlerFunc(http.MethodPost, "/webhooks", app.githubHandler)
-	router.HandlerFunc(http.MethodPost, "/v1/gitlab", app.gitlabHandler)
-	router.HandlerFunc(http.MethodPost, "/v1/bitbucket", app.bitBucketHandler)
+	router.HandlerFunc(http.MethodPost, "/github", app.githubHandler)
+	router.HandlerFunc(http.MethodPost, "/gitlab", app.gitlabHandler)
+	router.HandlerFunc(http.MethodPost, "/bitbucket", app.bitBucketHandler)
 
 	return router
 }
