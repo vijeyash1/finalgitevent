@@ -43,7 +43,10 @@ func (app *application) githubHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) gitlabHandler(w http.ResponseWriter, r *http.Request) {
-
+	event := r.Header.Get("X-Gitlab-Event")
+	if len(event) == 0 {
+		log.Println("ErrMissingGitLabEventHeader")
+	}
 	hook, _ := gitlab.New()
 	payload, err := hook.Parse(r, gitlab.PushEvents, gitlab.MergeRequestEvents)
 	if err != nil {
@@ -56,17 +59,20 @@ func (app *application) gitlabHandler(w http.ResponseWriter, r *http.Request) {
 
 	case gitlab.PushEventPayload:
 		release := value
-		composed := gitComposer(release, "PushEvent")
+		composed := gitComposer(release, event)
 		app.publish.JS.GitPublish(composed)
 	case gitlab.MergeRequest:
 		release := value
-		composed := gitComposer(release, "MergeRequest")
+		composed := gitComposer(release, event)
 		app.publish.JS.GitPublish(composed)
 	}
 }
 
 func (app *application) bitBucketHandler(w http.ResponseWriter, r *http.Request) {
-
+	event := r.Header.Get("X-Event-Key")
+	if event == "" {
+		log.Println("ErrMissingEventKeyHeader")
+	}
 	hook, _ := bitbucket.New()
 	payload, err := hook.Parse(r, bitbucket.RepoPushEvent, bitbucket.RepoForkEvent, bitbucket.PullRequestCreatedEvent)
 	if err != nil {
@@ -79,15 +85,15 @@ func (app *application) bitBucketHandler(w http.ResponseWriter, r *http.Request)
 
 	case bitbucket.RepoPushPayload:
 		release := value
-		composed := gitComposer(release, "PushEvent")
+		composed := gitComposer(release, event)
 		app.publish.JS.GitPublish(composed)
 	case bitbucket.RepoForkPayload:
 		release := value
-		composed := gitComposer(release, "ForkEvent")
+		composed := gitComposer(release, event)
 		app.publish.JS.GitPublish(composed)
 	case bitbucket.PullRequestCreatedPayload:
 		release := value
-		composed := gitComposer(release, "PullRequest")
+		composed := gitComposer(release, event)
 		app.publish.JS.GitPublish(composed)
 
 	}
