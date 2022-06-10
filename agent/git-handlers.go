@@ -11,7 +11,10 @@ import (
 )
 
 func (app *application) githubHandler(w http.ResponseWriter, r *http.Request) {
-
+	event := r.Header.Get("X-GitHub-Event")
+	if event == "" {
+		log.Println("ErrMissingGithubEventHeader")
+	}
 	hook, _ := github.New()
 	payload, err := hook.Parse(r, github.PushEvent, github.ForkEvent, github.PullRequestEvent)
 	if err != nil {
@@ -24,15 +27,15 @@ func (app *application) githubHandler(w http.ResponseWriter, r *http.Request) {
 	switch value := payload.(type) {
 	case github.PushPayload:
 		release := value
-		composed := gitComposer(release, "PushEvent")
+		composed := gitComposer(release, event)
 		app.publish.JS.GitPublish(composed)
 	case github.ForkPayload:
 		release := value
-		composed := gitComposer(release, "ForkEvent")
+		composed := gitComposer(release, event)
 		app.publish.JS.GitPublish(composed)
 	case github.PullRequestPayload:
 		release := value
-		composed := gitComposer(release, "PullRequest")
+		composed := gitComposer(release, event)
 		app.publish.JS.GitPublish(composed)
 
 	}
