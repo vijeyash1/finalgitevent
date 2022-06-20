@@ -26,6 +26,7 @@ func NewModels(js nats.JetStreamContext) Models {
 	}
 }
 
+//GitPublish method gets the composed data and marshal it and publish it to the Nats jetstream
 func (m *jsModel) GitPublish(d *models.Gitevent) {
 	metricsJson, _ := json.Marshal(d)
 	_, err := m.js.Publish("GITMETRICS.git", metricsJson)
