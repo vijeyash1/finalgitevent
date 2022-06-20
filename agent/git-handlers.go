@@ -10,6 +10,7 @@ import (
 	"github.com/vijeyash1/gitevent/gitlab"
 )
 
+//githubHandler handles the github webhooks post requests.
 func (app *application) githubHandler(w http.ResponseWriter, r *http.Request) {
 	event := r.Header.Get("X-GitHub-Event")
 	if event == "" {
@@ -42,6 +43,7 @@ func (app *application) githubHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+//gitlabHandler handles the github webhooks post requests.
 func (app *application) gitlabHandler(w http.ResponseWriter, r *http.Request) {
 	event := r.Header.Get("X-Gitlab-Event")
 	if len(event) == 0 {
@@ -68,6 +70,7 @@ func (app *application) gitlabHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+//bitBucketHandler handles the github webhooks post requests.
 func (app *application) bitBucketHandler(w http.ResponseWriter, r *http.Request) {
 	event := r.Header.Get("X-Event-Key")
 	if event == "" {
