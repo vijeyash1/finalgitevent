@@ -6,17 +6,25 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-playground/webhooks/v6/bitbucket"
-	"github.com/go-playground/webhooks/v6/github"
-	"github.com/go-playground/webhooks/v6/gitlab"
 	"github.com/google/uuid"
+	"github.com/vijeyash1/gitevent/bitbucket"
+	"github.com/vijeyash1/gitevent/github"
+	"github.com/vijeyash1/gitevent/gitlab"
 	"github.com/vijeyash1/gitevent/models"
 )
 
+//gitdatas is an identifier for the gitevent model
+//and its used to hold the data from the payloads
 var gitdatas models.Gitevent
 
+//gitComposer checks the payload type and extracts the data from the payload and
+//compose it into the gitdatas identifier and returns it
 func gitComposer(release interface{}, event string) *models.Gitevent {
 	uuid := uuid.New()
+
+	// here we are using the type assersion. release.(type) will return
+	//the type and assingns it to the identifier v
+	//the value in v will be used to match with the case
 	switch v := release.(type) {
 
 	case github.PushPayload:
@@ -31,26 +39,18 @@ func gitComposer(release interface{}, event string) *models.Gitevent {
 		gitdatas.Branch = v.Repository.DefaultBranch
 		addedFilesSlice := v.Commits[0].Added
 		addedFilesString := getStats(&addedFilesSlice)
-		if addedFilesString == "" {
-			gitdatas.Addedfiles = "---"
-		} else {
-			gitdatas.Addedfiles = addedFilesString
-		}
+		gitdatas.Addedfiles = checkData(addedFilesString)
+
 		modifiedFilesSlice := v.Commits[0].Modified
 		modifiedFilesString := getStats(&modifiedFilesSlice)
-		if modifiedFilesString == "" {
-			gitdatas.Modifiedfiles = "---"
-		} else {
-			gitdatas.Modifiedfiles = modifiedFilesString
-		}
+		gitdatas.Modifiedfiles = checkData(modifiedFilesString)
+
 		removedFilesSlice := v.Commits[0].Removed
 		removedFilesString := getStats(&removedFilesSlice)
-		if removedFilesString == "" {
-			gitdatas.Removedfiles = "---"
-		} else {
-			gitdatas.Removedfiles = removedFilesString
-		}
+		gitdatas.Removedfiles = checkData(removedFilesString)
+
 		gitdatas.Message = v.Commits[0].Message
+
 	case github.ForkPayload:
 		gitdatas.Uuid = uuid
 		gitdatas.Url = v.Repository.HTMLURL
@@ -64,6 +64,7 @@ func gitComposer(release interface{}, event string) *models.Gitevent {
 		gitdatas.Modifiedfiles = "---"
 		gitdatas.Removedfiles = "---"
 		gitdatas.Message = "---"
+
 	case github.PullRequestPayload:
 		gitdatas.Uuid = uuid
 		gitdatas.Url = v.Repository.HTMLURL
@@ -76,25 +77,16 @@ func gitComposer(release interface{}, event string) *models.Gitevent {
 		gitdatas.Branch = v.Repository.DefaultBranch
 		addedFilesSlice := strconv.Itoa(int(v.PullRequest.Additions))
 		addedFilesString := addedFilesSlice
-		if addedFilesString == "" {
-			gitdatas.Addedfiles = "---"
-		} else {
-			gitdatas.Addedfiles = addedFilesString
-		}
+		gitdatas.Addedfiles = checkData(addedFilesString)
+
 		modifiedFilesSlice := strconv.Itoa(int(v.PullRequest.ChangedFiles))
 		modifiedFilesString := modifiedFilesSlice
-		if modifiedFilesString == "" {
-			gitdatas.Modifiedfiles = "---"
-		} else {
-			gitdatas.Modifiedfiles = modifiedFilesString
-		}
+		gitdatas.Modifiedfiles = checkData(modifiedFilesString)
+
 		removedFilesSlice := strconv.Itoa(int(v.PullRequest.Deletions))
 		removedFilesString := removedFilesSlice
-		if removedFilesString == "" {
-			gitdatas.Removedfiles = "---"
-		} else {
-			gitdatas.Removedfiles = removedFilesString
-		}
+		gitdatas.Removedfiles = checkData(removedFilesString)
+
 		gitdatas.Message = v.PullRequest.Title
 
 	case gitlab.PushEventPayload:
@@ -109,26 +101,18 @@ func gitComposer(release interface{}, event string) *models.Gitevent {
 		gitdatas.Branch = v.Project.DefaultBranch
 		addedFilesSlice := v.Commits[0].Added
 		addedFilesString := getStats(&addedFilesSlice)
-		if addedFilesString == "" {
-			gitdatas.Addedfiles = "---"
-		} else {
-			gitdatas.Addedfiles = addedFilesString
-		}
+		gitdatas.Addedfiles = checkData(addedFilesString)
+
 		modifiedFilesSlice := v.Commits[0].Modified
 		modifiedFilesString := getStats(&modifiedFilesSlice)
-		if modifiedFilesString == "" {
-			gitdatas.Modifiedfiles = "---"
-		} else {
-			gitdatas.Modifiedfiles = modifiedFilesString
-		}
+		gitdatas.Modifiedfiles = checkData(modifiedFilesString)
+
 		removedFilesSlice := v.Commits[0].Removed
 		removedFilesString := getStats(&removedFilesSlice)
-		if removedFilesString == "" {
-			gitdatas.Removedfiles = "---"
-		} else {
-			gitdatas.Removedfiles = removedFilesString
-		}
+		gitdatas.Removedfiles = checkData(removedFilesString)
+
 		gitdatas.Message = v.Commits[0].Message
+
 	case gitlab.MergeRequestEventPayload:
 		gitdatas.Uuid = uuid
 		gitdatas.Url = v.Project.URL
@@ -141,25 +125,16 @@ func gitComposer(release interface{}, event string) *models.Gitevent {
 		gitdatas.Branch = v.Project.DefaultBranch
 		addedFilesSlice := ""
 		addedFilesString := addedFilesSlice
-		if addedFilesString == "" {
-			gitdatas.Addedfiles = "---"
-		} else {
-			gitdatas.Addedfiles = addedFilesString
-		}
+		gitdatas.Addedfiles = checkData(addedFilesString)
+
 		modifiedFilesSlice := ""
 		modifiedFilesString := modifiedFilesSlice
-		if modifiedFilesString == "" {
-			gitdatas.Modifiedfiles = "---"
-		} else {
-			gitdatas.Modifiedfiles = modifiedFilesString
-		}
+		gitdatas.Modifiedfiles = checkData(modifiedFilesString)
+
 		removedFilesSlice := ""
 		removedFilesString := removedFilesSlice
-		if removedFilesString == "" {
-			gitdatas.Removedfiles = "---"
-		} else {
-			gitdatas.Removedfiles = removedFilesString
-		}
+		gitdatas.Removedfiles = checkData(removedFilesString)
+
 		gitdatas.Message = v.ObjectAttributes.LastCommit.Message
 
 	case bitbucket.RepoPushPayload:
@@ -174,26 +149,18 @@ func gitComposer(release interface{}, event string) *models.Gitevent {
 		gitdatas.Branch = v.Push.Changes[0].New.Name
 		addedFilesSlice := ""
 		addedFilesString := addedFilesSlice
-		if addedFilesString == "" {
-			gitdatas.Addedfiles = "---"
-		} else {
-			gitdatas.Addedfiles = addedFilesString
-		}
+		gitdatas.Addedfiles = checkData(addedFilesString)
+
 		modifiedFilesSlice := ""
 		modifiedFilesString := modifiedFilesSlice
-		if modifiedFilesString == "" {
-			gitdatas.Modifiedfiles = "---"
-		} else {
-			gitdatas.Modifiedfiles = modifiedFilesString
-		}
+		gitdatas.Modifiedfiles = checkData(modifiedFilesString)
+
 		removedFilesSlice := ""
 		removedFilesString := removedFilesSlice
-		if removedFilesString == "" {
-			gitdatas.Removedfiles = "---"
-		} else {
-			gitdatas.Removedfiles = removedFilesString
-		}
+		gitdatas.Removedfiles = checkData(removedFilesString)
+
 		gitdatas.Message = v.Push.Changes[0].New.Target.Message
+
 	case bitbucket.RepoForkPayload:
 		rs := time.Now().UTC()
 		gitdatas.Uuid = uuid
@@ -207,25 +174,16 @@ func gitComposer(release interface{}, event string) *models.Gitevent {
 		gitdatas.Branch = "---"
 		addedFilesSlice := ""
 		addedFilesString := addedFilesSlice
-		if addedFilesString == "" {
-			gitdatas.Addedfiles = "---"
-		} else {
-			gitdatas.Addedfiles = addedFilesString
-		}
+		gitdatas.Addedfiles = checkData(addedFilesString)
+
 		modifiedFilesSlice := ""
 		modifiedFilesString := modifiedFilesSlice
-		if modifiedFilesString == "" {
-			gitdatas.Modifiedfiles = "---"
-		} else {
-			gitdatas.Modifiedfiles = modifiedFilesString
-		}
+		gitdatas.Modifiedfiles = checkData(modifiedFilesString)
+
 		removedFilesSlice := ""
 		removedFilesString := removedFilesSlice
-		if removedFilesString == "" {
-			gitdatas.Removedfiles = "---"
-		} else {
-			gitdatas.Removedfiles = removedFilesString
-		}
+		gitdatas.Removedfiles = checkData(removedFilesString)
+
 		gitdatas.Message = "---"
 
 	case bitbucket.PullRequestCreatedPayload:
@@ -240,25 +198,15 @@ func gitComposer(release interface{}, event string) *models.Gitevent {
 		gitdatas.Branch = "---"
 		addedFilesSlice := ""
 		addedFilesString := addedFilesSlice
-		if addedFilesString == "" {
-			gitdatas.Addedfiles = "---"
-		} else {
-			gitdatas.Addedfiles = addedFilesString
-		}
+		gitdatas.Addedfiles = checkData(addedFilesString)
 		modifiedFilesSlice := ""
 		modifiedFilesString := modifiedFilesSlice
-		if modifiedFilesString == "" {
-			gitdatas.Modifiedfiles = "---"
-		} else {
-			gitdatas.Modifiedfiles = modifiedFilesString
-		}
+		gitdatas.Modifiedfiles = checkData(modifiedFilesString)
+
 		removedFilesSlice := ""
 		removedFilesString := removedFilesSlice
-		if removedFilesString == "" {
-			gitdatas.Removedfiles = "---"
-		} else {
-			gitdatas.Removedfiles = removedFilesString
-		}
+		gitdatas.Removedfiles = checkData(removedFilesString)
+
 		gitdatas.Message = v.PullRequest.Description
 
 	}
@@ -273,4 +221,14 @@ func getStats(stat *[]string) string {
 		sb.WriteString(",")
 	}
 	return sb.String()
+}
+
+//checkData checks whether the data is empty or not and
+//returns "---" if data is empty
+func checkData(data string) string {
+	if data == "" {
+		return "---"
+	} else {
+		return data
+	}
 }

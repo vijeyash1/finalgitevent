@@ -5,9 +5,9 @@ import (
 
 	"net/http"
 
-	"github.com/go-playground/webhooks/v6/bitbucket"
-	"github.com/go-playground/webhooks/v6/github"
-	"github.com/go-playground/webhooks/v6/gitlab"
+	"github.com/vijeyash1/gitevent/bitbucket"
+	"github.com/vijeyash1/gitevent/github"
+	"github.com/vijeyash1/gitevent/gitlab"
 )
 
 func (app *application) githubHandler(w http.ResponseWriter, r *http.Request) {
